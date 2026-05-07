@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>JOYCITY — Калькулятор юнит-экономики</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+*{box-sizing:border-box}
+:root{
+  --bg:#050807;
+  --bg2:#0a0f0d;
+  --bg3:#0f1614;
+  --card:#0c1310;
+  --border:#1a2620;
+  --border2:#243530;
+  --neon:#00ff88;
+  --neon-dim:#00cc6e;
+  --neon-glow:0 0 12px rgba(0,255,136,0.4);
+  --neon-glow-strong:0 0 20px rgba(0,255,136,0.6),0 0 40px rgba(0,255,136,0.2);
+  --red:#ff3366;
+  --red-glow:0 0 12px rgba(255,51,102,0.4);
+  --text:#e8f0ec;
+  --text-dim:#7a8b85;
+  --text-mute:#4a5953;
+}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;
+  margin:0;padding:24px;
+  background:var(--bg);
+  background-image:
+    radial-gradient(circle at 20% 0%,rgba(0,255,136,0.04) 0%,transparent 50%),
+    radial-gradient(circle at 80% 100%,rgba(0,255,136,0.03) 0%,transparent 50%);
+  color:var(--text);font-size:14px;line-height:1.4;min-height:100vh
+}
+.wrap{max-width:1320px;margin:0 auto}
+h1{
+  font-size:24px;margin:0 0 4px;font-weight:700;
+  color:var(--neon);text-shadow:var(--neon-glow);
+  letter-spacing:0.5px
+}
+.sub{color:var(--text-dim);font-size:13px;margin:0 0 24px}
+.sub b{color:var(--neon);font-weight:600}
+
+/* СПП баннер */
+.spp-banner{
+margin-bottom:16px;padding:14px 18px;
+border-radius:10px;
+border:1px solid var(–border2);
+background:var(–card);
+display:flex;align-items:center;gap:12px;
+font-size:13px;
+transition:all 0.3s
+}
+.spp-banner .ico{font-size:18px;flex-shrink:0}
+.spp-banner .txt{flex:1}
+.spp-banner .txt b{font-weight:700}
+.spp-banner.bonus{
+border-color:var(–neon);
+background:linear-gradient(90deg,rgba(0,255,136,0.08) 0%,rgba(0,255,136,0.02) 100%);
+box-shadow:var(–neon-glow)
+}
+.spp-banner.bonus .ico{color:var(–neon);text-shadow:var(–neon-glow)}
+.spp-banner.bonus b{color:var(–neon)}
+.spp-banner.neutral{border-color:var(–text-dim)}
+.spp-banner.neutral .ico{color:var(–text-dim)}
+.spp-banner.safe{
+border-color:var(–neon-dim);
+background:linear-gradient(90deg,rgba(0,204,110,0.05) 0%,transparent 100%)
+}
+.spp-banner.safe .ico{color:var(–neon-dim)}
+.spp-banner.safe b{color:var(–neon-dim)}
+
+.ag{
+background:var(–card);
+border:1px solid var(–border);
+border-radius:12px;padding:18px;margin-bottom:16px
+}
+.ag-l{
+font-size:11px;color:var(–text-dim);
+margin:0 0 14px;text-transform:uppercase;
+letter-spacing:0.8px;font-weight:600
+}
+.ag-g{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.ag-m{
+padding:16px;background:var(–bg2);
+border:1px solid var(–border);
+border-radius:8px;position:relative;overflow:hidden
+}
+.ag-m::before{
+content:'';position:absolute;top:0;left:0;
+width:3px;height:100%;background:var(–neon);
+box-shadow:var(–neon-glow);opacity:0.6
+}
+.ag-m .lb{font-size:10px;color:var(–text-mute);margin:0 0 6px;text-transform:uppercase;letter-spacing:0.5px;font-weight:600}
+.ag-m .vl{
+font-size:26px;font-weight:700;margin:0;
+font-variant-numeric:tabular-nums;line-height:1.1;
+font-family:"SF Mono","JetBrains Mono",Monaco,Consolas,monospace;
+letter-spacing:-0.5px
+}
+.ag-m .dt{font-size:11px;margin-top:4px;font-variant-numeric:tabular-nums;color:var(–text-mute);font-family:"SF Mono",Monaco,monospace}
+
+.sg{display:grid;grid-template-columns:repeat(5,1fr);gap:14px 18px}
+.sc{display:flex;flex-direction:column;gap:6px}
+.sc-h{display:flex;justify-content:space-between;align-items:baseline;font-size:12px}
+.sc-l{color:var(–text-dim);text-transform:uppercase;font-size:10px;letter-spacing:0.5px;font-weight:600}
+.sc-v{
+font-weight:700;font-variant-numeric:tabular-nums;
+color:var(–neon);text-shadow:var(–neon-glow);
+font-family:"SF Mono",Monaco,monospace;font-size:13px
+}
+
+input[type="range"]{
+    /* slider track */
+    -webkit-appearance:none;
+    appearance:none;
+    width:100%;
+    height:4px;
+    background:#243530; /* fallback to border2 color */
+    border-radius:2px;
+    outline:none;
+    cursor:pointer;
+}
+/* slider thumb for WebKit browsers */
+input[type="range"]::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    appearance:none;
+    width:14px;
+    height:14px;
+    border-radius:50%;
+    background:#00ff88; /* neon color */
+    box-shadow:0 0 12px rgba(0,255,136,0.4);
+    cursor:pointer;
+    border:2px solid #050807; /* fallback to background color */
+}
+/* slider thumb for Firefox browsers */
+input[type="range"]::-moz-range-thumb{
+    width:14px;
+    height:14px;
+    border-radius:50%;
+    background:#00ff88; /* neon color */
+    box-shadow:0 0 12px rgba(0,255,136,0.4);
+    cursor:pointer;
+    border:2px solid #050807; /* fallback to background color */
+}
+
+.btn-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:12px;flex-wrap:wrap}
+.fb{display:flex;gap:6px;flex-wrap:wrap}
+.fb-btn{
+padding:7px 16px;font-size:12px;
+border:1px solid var(–border2);
+border-radius:8px;background:var(–bg2);
+cursor:pointer;color:var(–text-dim);
+transition:all 0.15s;font-weight:500;
+letter-spacing:0.3px
+}
+.fb-btn:hover{border-color:var(–neon-dim);color:var(–text)}
+.fb-btn.act{
+background:var(–neon);border-color:var(–neon);
+color:var(–bg);font-weight:700;
+box-shadow:var(–neon-glow)
+}
+.rb{
+font-size:12px;padding:7px 14px;
+border:1px solid var(–border2);
+background:var(–bg2);border-radius:8px;
+cursor:pointer;color:var(–text-dim);font-weight:500
+}
+.rb:hover{color:var(–neon);border-color:var(–neon-dim)}
+.fb-cnt{font-size:11px;color:var(–text-mute);font-family:"SF Mono",Monaco,monospace}
+.search{
+padding:7px 12px;font-size:13px;
+border:1px solid var(–border2);
+border-radius:8px;width:220px;
+font-family:inherit;background:var(–bg2);
+color:var(–text);outline:none
+}
+.search:focus{border-color:var(–neon-dim);box-shadow:0 0 0 1px rgba(0,255,136,0.2)}
+.search::placeholder{color:var(–text-mute)}
+
+.tw{
+background:var(–card);border:1px solid var(–border);
+border-radius:12px;overflow:hidden;
+max-height:600px;overflow-y:auto
+}
+.tw::-webkit-scrollbar{width:8px}
+.tw::-webkit-scrollbar-track{background:var(–bg2)}
+.tw::-webkit-scrollbar-thumb{background:var(–border2);border-radius:4px}
+.tw::-webkit-scrollbar-thumb:hover{background:var(–neon-dim)}
+
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{
+position:sticky;top:0;background:var(–bg3);z-index:1;
+text-align:right;padding:12px 12px;
+font-weight:700;font-size:10px;
+color:var(–text-dim);
+border-bottom:1px solid var(–border2);
+text-transform:uppercase;letter-spacing:0.6px
+}
+th:first-child,th:nth-child(2){text-align:left}
+th.sortable{cursor:pointer;user-select:none}
+th.sortable:hover{color:var(–neon)}
+td{
+padding:9px 12px;
+border-bottom:1px solid var(–border);
+font-variant-numeric:tabular-nums;text-align:right;
+font-family:"SF Mono",Monaco,monospace;font-size:12.5px
+}
+td:first-child,td:nth-child(2){text-align:left;font-family:inherit;font-size:13px}
+td:first-child{font-weight:600;color:var(–text)}
+tr:hover td{background:var(–bg2)}
+
+.np-pos{color:var(–neon);text-shadow:0 0 6px rgba(0,255,136,0.3)}
+.np-neg{color:var(–red);text-shadow:0 0 6px rgba(255,51,102,0.3)}
+
+.gt{
+display:inline-block;padding:2px 9px;
+font-size:10px;font-weight:700;
+border-radius:999px;
+font-family:inherit;letter-spacing:0.3px
+}
+.gt-A{background:rgba(0,255,136,0.15);color:var(–neon);border:1px solid rgba(0,255,136,0.3)}
+.gt-B{background:rgba(0,180,255,0.12);color:#00b4ff;border:1px solid rgba(0,180,255,0.3)}
+.gt-C{background:rgba(255,200,0,0.12);color:#ffc800;border:1px solid rgba(255,200,0,0.3)}
+.gt-D{background:rgba(255,51,102,0.12);color:var(–red);border:1px solid rgba(255,51,102,0.3)}
+
+.formulas{
+background:var(–card);border:1px solid var(–border);
+border-radius:12px;padding:18px;margin-top:20px;
+font-size:13px;color:var(–text-dim);line-height:1.7
+}
+.formulas h3{margin:0 0 10px;font-size:13px;color:var(–neon);text-transform:uppercase;letter-spacing:0.6px;font-weight:700}
+.formulas code{
+background:var(–bg2);padding:3px 8px;border-radius:4px;
+font-family:"SF Mono",Monaco,monospace;font-size:12px;
+color:var(–neon);border:1px solid var(–border)
+}
+.formulas b{color:var(–text)}
+
+@media(max-width:900px){.ag-g{grid-template-columns:repeat(2,1fr)}.sg{grid-template-columns:repeat(2,1fr)}}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+<h1>◢ JOYCITY UNIT-ECONOMICS</h1>
+<p class="sub">Полный портфель: <b id="ttl">0</b> активных SKU · ОСНО · НДС 22% · налог на прибыль 25%</p>
+
+<div class="spp-banner" id="spp-banner">
+  <div class="ico">●</div>
+  <div class="txt" id="spp-txt"></div>
+</div>
+
+<div class="ag">
+  <p class="ag-l">▸ Сводка по портфелю / 1 шт каждого SKU</p>
+  <div class="ag-g">
+    <div class="ag-m"><p class="lb">Сумма ЧП</p><p class="vl" id="a-np">0 ₽</p><p class="dt" id="a-np-d"></p></div>
+    <div class="ag-m"><p class="lb">Налоговая нагрузка</p><p class="vl" id="a-tax">0 ₽</p><p class="dt">НДС + налог на прибыль</p></div>
+    <div class="ag-m"><p class="lb">В прибыли</p><p class="vl" id="a-pos">0</p><p class="dt" id="a-pos-d"></p></div>
+    <div class="ag-m"><p class="lb">В убытке</p><p class="vl" id="a-neg">0</p><p class="dt" id="a-neg-d"></p></div>
+  </div>
+</div>
+
+<div class="ag">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+    <p class="ag-l" style="margin:0">▸ Параметры (применяются ко всем SKU)</p>
+    <button class="rb" id="reset">↻ Сбросить</button>
+  </div>
+  <div class="sg">
+    <div class="sc"><div class="sc-h"><span class="sc-l">Цена ±%</span><span class="sc-v" id="v-p">0%</span></div><input type="range" id="i-p" min="-30" max="50" value="0"></div>
+    <div class="sc"><div class="sc-h"><span class="sc-l">Себест. ±%</span><span class="sc-v" id="v-c">0%</span></div><input type="range" id="i-c" min="-30" max="50" value="0"></div>
+    <div class="sc"><div class="sc-h"><span class="sc-l">% СПП</span><span class="sc-v" id="v-spp">32%</span></div><input type="range" id="i-spp" min="0" max="60" value="32"></div>
+    <div class="sc"><div class="sc-h"><span class="sc-l">Удерж. WB</span><span class="sc-v" id="v-wb">34%</span></div><input type="range" id="i-wb" min="15" max="50" value="34" step="0.5"></div>
+    <div class="sc"><div class="sc-h"><span class="sc-l">Эквайринг</span><span class="sc-v" id="v-acq">2,5%</span></div><input type="range" id="i-acq" min="0" max="5" value="2.5" step="0.1"></div>
+    <div class="sc"><div class="sc-h"><span class="sc-l">Вывод</span><span class="sc-v" id="v-wth">0,75%</span></div><input type="range" id="i-wth" min="0" max="3" value="0.75" step="0.05"></div>
+    <div class="sc"><div class="sc-h"><span class="sc-l">ДРР</span><span class="sc-v" id="v-drr">10%</span></div><input type="range" id="i-drr" min="0" max="60" value="10" step="0.5"></div>
+    <div class="sc"><div class="sc-h"><span class="sc-l">Перем. ₽/шт</span><span class="sc-v" id="v-var">200 ₽</span></div><input type="range" id="i-var" min="0" max="500" value="200" step="10"></div>
+    <div class="sc"><div class="sc-h"><span class="sc-l">НДС</span><span class="sc-v" id="v-nds">22%</span></div><input type="range" id="i-nds" min="0" max="30" value="22"></div>
+    <div class="sc"><div class="sc-h"><span class="sc-l">Налог приб.</span><span class="sc-v" id="v-tax">25%</span></div><input type="range" id="i-tax" min="0" max="30" value="25"></div>
+  </div>
+</div>
+
+<div class="btn-row">
+  <div class="fb">
+    <button class="fb-btn act" data-f="all">Все</button>
+    <button class="fb-btn" data-f="A">A</button>
+    <button class="fb-btn" data-f="B">B</button>
+    <button class="fb-btn" data-f="C">C</button>
+    <button class="fb-btn" data-f="D">D</button>
+    <button class="fb-btn" data-f="pos">Прибыльные</button>
+    <button class="fb-btn" data-f="neg">Убыточные</button>
+  </div>
+  <input type="text" class="search" id="search" placeholder="Поиск артикула...">
+  <span class="fb-cnt" id="fb-cnt"></span>
+</div>
+
+<div class="tw">
+<table>
+<thead><tr>
+<th class="sortable" data-s="n">Артикул</th>
+<th>Гр.</th>
+<th class="sortable" data-s="pr">Цена ▼</th>
+<th class="sortable" data-s="co">С/с ▼</th>
+<th class="sortable" data-s="o">ЧП было ▼</th>
+<th class="sortable" data-s="nw">ЧП стало ▼</th>
+<th class="sortable" data-s="d">Δ ▼</th>
+</tr></thead>
+<tbody id="tb"></tbody>
+</table>
+</div>
+
+<div class="formulas">
+<h3>▸ Логика расчёта (ОСНО)</h3>
+<p><b>1. Поступления селлера</b> — селлер ВСЕГДА получает свои <b style="color:var(--neon)">66%</b> от каталога (при удержаниях WB 34%). СПП ≤ 34% — это скидка покупателю <b>за счёт маркетплейса</b>, ЧП селлера не меняется. СПП > 34% — WB <b>доплачивает</b> селлеру разницу из своей маржи, и селлер зарабатывает БОЛЬШЕ обычного.</p>
+<p><b>2. НДС</b> = Поступления × (НДС% / (100 + НДС%)) — уходит в бюджет.</p>
+<p><b>3. Расходы</b> = Себестоимость + Переменные(₽/шт) + Эквайринг(% от поступлений) + Вывод(% от поступлений) + ДРР(% от поступлений). Все процентные расходы считаются от того, что приходит селлеру — поэтому СПП в безопасной зоне на них не влияет.</p>
+<p><b>4. Прибыль до налога</b> = Поступления − НДС − Расходы</p>
+<p><b>5. Налог на прибыль</b> = max(Прибыль до налога, 0) × Налог% — если убыток, налог не начисляется (но НДС платится всегда).</p>
+<p><b>6. Чистая прибыль</b> = Прибыль до налога − Налог на прибыль</p>
+<p style="margin-top:14px;color:var(--text-mute)">Логика виджета: <b>«ЧП было»</b> — фактическая прибыль из таблицы. <b>«ЧП стало»</b> = «ЧП было» + дельта от изменения параметров. Модель не теряет точность по реальным данным.</p>
+</div>
+
+</div>
+
+<script>
+var R="B74-3|3165|678|486|A;jeans_wide_blue|3945|624|531|A;X-01_black|3126|659|502|A;B148-1|4232|711|727|A;B74-1|3248|678|406|A;X-01_white|3035|659|330|A;B148-2|4250|711|656|A;B17-6|3938|741|453|A;jeans_wide_lblue|4218|624|598|A;B96-2|3138|732|392|A;B148-3|3869|711|510|A;B147-2|3064|688|358|A;J02-2|4197|707|699|A;A02_beige|3101|635|355|A;B17-1|3186|741|317|A;B76-2|4144|824|603|A;J05-2|5413|743|1024|A;J05-1|5518|743|958|A;B83-2|3368|569|515|A;B74-4|3154|678|331|A;B76-3|3961|824|339|A;B83-1|3350|569|498|A;B96-1|3018|732|287|A;B123-1|3846|685|597|A;B8-1|2986|627|248|A;B17-9|3311|741|336|A;B71-1|4134|678|448|A;B9-1|3082|728|282|A;F10|5178|1195|437|A;B96-4|3176|666|251|A;B8-2|3092|627|432|A;B119-3|3690|1074|268|A;B175-3|3625|743|509|A;B72-1|3369|881|353|A;B-01_new|3048|501|557|A;B107-3|4090|981|488|A;B71-3|4657|678|652|A;B31|3275|741|266|A;B11|3239|653|359|A;joyzont_men|967|201|122|A;B11-8|3540|623|442|A;joyzont_blk|974|201|70|A;B71-4|3216|678|207|A;B11-7|3534|706|363|A;B48-3|3104|843|138|A;B169-2|3647|600|853|A;B11-5|3661|623|298|A;B74-2|3321|678|368|A;B72-2|3410|881|176|A;jeans_wide_grey|4368|624|472|A;joyzont_brown|954|210|58|A;B3-6|3234|665|177|A;B48-2|3084|843|247|A;J02-1|4230|707|221|A;B119-2|3548|1074|131|A;B96-3|3123|666|304|A;B123-2|3753|685|364|A;B105-1|3247|887|226|A;B107-1|4427|981|363|A;B101-1|3194|724|271|A;B47-1|3645|846|332|A;B45-1|2990|856|207|A;joyzont_bardo|934|210|65|A;B152-1|4162|713|298|A;B48-1|3081|843|16|A;B17-2|3696|741|253|B;B95-2|3552|791|320|B;joyzont_purple|919|201|46|B;B98-3|3777|1064|188|B;TRUSI4_man|1035|350|37|B;B17-3|3399|741|149|B;B123-3|3739|685|312|B;B91-2|3414|685|234|B;B8-8|3226|627|351|B;J05-3|4427|720|669|B;B18-1|3057|754|261|B;B17-5|3444|741|289|B;B45-3|3229|856|270|B;B158-1|3636|749|191|B;B107-2|4115|981|412|B;B47-4|3407|846|267|B;B11-2|3683|675|527|B;B147-3|3289|688|221|B;A23_brown_zm|4302|754|786|B;B8-10|3271|627|234|B;B3-2|3302|665|151|B;B91-1|3403|685|264|B;B99-2|3555|677|271|B;B158-3|3612|749|352|B;jeans_wide_blk|3310|624|160|B;A23_black|3360|754|212|B;B152-2|4250|698|473|B;B11-1|3688|659|406|B;B169-1|3448|881|45|B;B105-2|3508|887|153|B;B8-7|2995|627|195|B;B75-3|3160|678|99|B;B152-3|3924|698|347|B;B30-3|3927|765|296|B;B97-3|3518|865|176|B;J03-1|5113|800|291|B;B17-4|3332|741|281|B;B116-2|3461|659|164|B;B11-3|3724|706|287|B;B82-1|3969|868|364|B;B17-7|3418|741|162|B;B70-1|3200|678|205|B;J01-2|4368|668|87|B;B11-4|3684|659|330|B;A23_bordo|3360|754|13|B;B8-6|3197|627|225|B;B89-2|4675|600|860|B;A23_brown_lt|3457|754|76|B;B81-2|3155|808|185|B;B40_new|2902|564|171|B;B175-2|3616|758|271|B;B35-2|3266|698|239|B;B99-5|3314|954|86|B;B11-6|3500|706|257|B;B71-2|3682|678|59|B;B101-2|3301|724|100|B;B116-1|4320|600|934|B;B42-2|2963|602|296|B;B99-1|3317|954|44|B;B106-2|3363|1106|10|C;B38-3|3325|703|92|C;joyzont_bx|1565|508|-35|C;B155-2|3719|711|186|C;B70-2|3259|678|108|C;W02-12|4323|1292|355|C;B147-1|3156|688|88|C;B75-1|3231|678|-63|C;B47-3|2992|846|126|C;B75-2|3279|678|30|C;B89-1|4642|600|643|C;B97-1|3679|829|181|C;B158-2|3599|749|333|C;B42-4|3303|630|179|C;B73-3|3823|934|-152|C;joyzont_blue|959|201|-12|C;B98-2|3628|1064|39|C;B36|3407|716|61|C;B35|3469|690|107|C;B126-1|3719|746|242|C;B175-1|3639|743|93|C;B92-1|3117|645|17|C;B95-1|3599|791|46|C;B155-1|3735|711|113|C;B45-2|3431|856|-11|C;W02-13|4291|1292|55|C;jeans_grey|2942|943|251|C;B102-3|3320|742|26|C;W03-17|4049|1223|94|C;jeans_blue|2894|943|265|C;B87-1|3592|953|167|C;B43|3134|678|8|C;B81-3|3045|808|-53|C;B32|3352|754|101|C;B86-1|4202|868|59|C;B77-3|3347|729|8|C;B80-3|3172|768|-10|C;X03-2|4413|800|261|C;B103-3|3739|852|-56|C;B121-3|3534|977|77|C;B126-3|3449|746|102|C;B47-2|3233|846|-18|C;B126-2|3468|746|80|C;jeans_drkblue|2941|943|214|C;B140-1|3978|852|117|C;B5-3|2702|519|453|C;B127-1|3757|768|10|C;B3-1|2930|665|-72|C;B97-2|3318|865|-7|C;B92-2|2914|645|-67|C;M02-8|4722|1748|110|C;B132-2|3965|739|53|C;B116-3|3467|659|-60|C;JN02-1|3650|739|54|C;B163-2|3462|931|-94|C;B153-2|3459|711|120|C;W03-4|3804|1178|289|C;B5-1|2678|519|320|C;bottle_blue|383|93|60|C;B46|3034|614|587|C;B177-3|3624|713|-15|C;B30-1|4555|800|317|C;M02-5|4409|1336|-100|C;W02-8|5611|1580|323|C;W03-7|3956|1223|186|C;B80-2|3313|768|-35|C;bottle_pink|381|93|59|C;B38-2|2794|600|623|C;B25_new|3734|843|-7|C;B8-9|3206|627|-64|C;B106-1|3351|1106|-117|C;B100-2|3538|785|-78|C;B162-1|3750|800|41|C;Botinki_L02|1392|400|489|C;B118-2|3484|980|-113|C;YE5-1|3647|600|1284|C;B5-2|2879|519|721|C;jeans_l_blue|2900|943|178|C;W03-12|4619|1318|190|C;B122-1|3894|940|-119|C;B18-4|2653|600|364|C;W02-10|4162|1368|-46|C;R01|2195|600|372|C;bottle_yel|378|93|59|C;YE7-1|2383|600|562|C;B153-1|3351|711|-107|C;W01-3|4251|1134|146|C;B160-2|3392|786|-8|C;B166-1|3520|600|1243|C;B18-3|3080|600|367|C;B98-1|3597|1064|-161|C;W03-8|3995|1159|-75|C;B138-1|3648|600|73|C;B18-2|3135|600|-21|C;B104-1|3949|932|-145|C;B173-2|3952|816|-47|C;W02-1|4171|1508|-129|C;B42-3|3379|552|-135|C;X02-1|3480|600|78|C;B42-5|3405|552|-18|C;B132-3|3939|739|-118|C;B95-3|3626|791|-148|C;B102-1|3246|742|-172|C;W01-2|4055|1197|360|C;B33-2|2100|500|719|C;B33-1|2100|500|743|C;B166-3|2682|600|948|C;M01-16|4392|1520|-119|C;X02-2|3973|600|-67|C;A13_black|2983|966|341|C;B104-2|3915|932|-187|C;B27-3|1575|400|542|C;B167-4|2093|600|744|C;backpack_bk|1838|449|203|C;B177-5|1853|600|660|C;jeans_jc_bl|3042|721|114|C;M01-11|4477|1318|-101|C;A23_white|3487|754|-192|C;B146-1|3969|737|-153|C;W01-7|4744|1419|-197|C;A20-black|1970|400|700|C;M01-6|6419|1596|141|C;M02-11|3529|1343|137|C;B167-2|2093|600|332|C;B48-3o|3241|600|1142|C;B18-2_n|4000|600|1061|C;J03-2|5152|800|-292|C;bottle_pur|383|93|60|C;B48-2o|3032|600|1073|C;B76-1|3674|824|-414|C;W02-7|5698|1605|829|C;B77-1|3366|729|-194|C;B28-3|2600|500|922|C;B18-5|2500|500|842|C;W02-5|4098|1229|-225|C;W03-16|5409|1419|-16|C;B102-2|3097|742|-169|C;W01-8|5217|1387|-4|C;B19-1|2060|500|731|C;backpack_bg|2000|500|301|C;backpack_bl|2857|987|222|C;M01-5|4176|1685|-100|C;B115-2|3870|600|-203|C;W01-1|4172|1210|-133|C;backpack_b1|2758|987|203|C;M03-1|4200|1356|-163|C;backpack_b2|1913|500|21|C;futb_blk|601|200|212|D;M01-2|3616|1223|-207|D;B25|3080|600|-188|D;DA3402-A|2400|1545|-304|D;D225-1|2500|1597|-314|D;W03-3|4002|1191|-263|D;B46-1|3169|843|-198|D;futb_wht|780|300|-145|D;A13_white|3038|857|-1034|D;B103-1|3510|852|-234|D;AU3614-A|3654|1545|-1178|D;B142-1|3082|600|-441|D;B30-2|3821|765|-247|D;B177-1|3231|600|-276|D;W03-2|5442|1419|-1092|D;B42-1|2912|602|-201|D;M01-13|4252|1305|-1794|D;jeans_jc_bk|2891|618|-583|D;C3256-29A|1957|1545|-1782|D;313-A|2350|1545|-977|D;B39-3|3110|645|-243|D;363-A|2400|1545|-742|D;B37-2|2450|754|-2276|D;B40|2689|600|-472|D;B20-1|3308|624|-316|D;futb_blk_n|1073|299|-175|D;B46-2|3411|843|-260|D;A665-21|2600|1545|-2933|D;M01-8|5325|1451|-1777|D;B85-1|3864|600|-650|D;M01-3|4056|1216|-1732|D;B166-2|2801|600|-779|D;B162-2|3167|600|-541|D;B139-1|3578|600|-1392|D;backpack_gr|1812|449|-564|D;B94-1|4027|600|-764|D;B113-1|3950|600|-409|D;M02-14|3360|1343|-885|D;CA3576-29A|2400|1545|-4408|D;B170-1|4797|904|-452|D;B41|2000|500|-2458|D;A10_white|2970|903|-1000|D;B32_new|3067|600|-2762|D;W02-18|4316|1330|-417|D;B172-3|3982|600|-2900|D;CA3528-6A|2413|1545|-5490|D;B121-4|3132|977|-371|D;B94-2|3525|600|-1678|D;B20-2|3745|624|-524|D;A12_white|3128|1004|-303|D;B37-1|2830|754|-471|D;B121-2|3663|977|-363|D;B168-2|3270|736|-1856|D;W03-1|5298|1419|-2598|D;B90-2|3332|634|-649|D;W03-15|4587|1419|-1277|D;B7-3|3182|785|-447|D;B77-4|3342|729|-260|D;B171-2|2806|600|-4005|D;313-6A|2500|1545|-7954|D;K21_bw|2001|600|-8204|D;387-A|2469|1545|-1044|D;B121-1|3522|977|-723|D;M01-7|3710|1375|-2305|D;B39-1|3036|645|-783|D;B129-3|3964|878|-935|D;X03-1|4247|600|-747|D;312-6A|2400|1545|-8684|D;B131-1|2024|600|-4507|D;B168-1|3990|736|-2006|D;B171-1|3259|600|-1478|D;K21_black|2201|600|-9206|D;B99-3|3690|788|-319|D;M03-8|5431|1242|-9503|D;B115-1|3198|600|-1521|D;B129-4|3619|878|-1153|D;B145-1|3404|600|-2087|D;B160-1|3532|786|-559|D;B173-1|3745|816|-1277|D;B100-1|3935|600|-5065|D;M01-10|4368|1305|-1249|D;B86-2|3806|868|-619|D;B138-2|3814|600|-1178|D;A12_black|3223|1004|-1619|D;336-A|2413|1545|-1475|D;CA3528-A|2400|1545|-773|D;B90-1|2860|634|-732|D;W03-6|4699|1330|-1554|D;B177-2|3084|600|-1616|D;futb_wht_n|1059|299|-87|D;B87-2|3741|953|-409|D;M03-2|3539|1191|-464|D;W02-15|4658|1580|-710|D;M02-7|4365|1343|-462|D;B153-3|3153|711|-601|D;B172-2|2826|791|-1981|D;W01-9|4143|1204|-704|D;B99-4|3399|803|-355|D;B149-2|3730|821|-476|D;B122-2|3948|940|-460|D;W03-13|4308|1318|-524|D;jzn_blk_h|1468|489|-127|D;B131-2|3915|600|-14590|D;B176-1|2667|700|-843|D;B-01|2785|551|-298|D;W02-11|4494|1368|-1485|D;CA3528-3A|2375|1545|-3837|D;JN01-2|3657|610|-901|D;M03-7|3001|1242|-2693|D;B145-2|3895|600|-5362|D;A02_brown|3074|652|-290|D;A10_black|2891|903|-1636|D;B30_new|3679|754|-399|D;B81-1|3046|808|-393|D;B137-2|3163|600|-2520|D;B178-1|4318|600|-1083|D;B137-1|2794|600|-3622|D;B146-2|4003|737|-613|D;M02-16|4062|1622|-8908|D;X6-1|4770|600|-3821|D;JN02-2|3696|739|-2482|D;B176-2|3238|700|-2223|D;W03-5|4362|1330|-4931|D;B129-1|3947|878|-3951|D;B118-1|3517|980|-486|D;X5-2|3121|600|-2123|D;W03-10|3912|1286|-628|D;B110-1|3354|600|-1570|D;B141-1|3844|775|-20991|D;B150-2|3695|688|-1379|D;B110-2|2787|600|-4423|D;B172-1|4116|791|-4589|D;B109-1|3819|852|-2998|D;B129-2|3943|878|-1290|D;B7-2|3196|785|-458|D;W03-9|4345|1286|-941|D;W02-14|4021|1584|-2498|D;B77-2|3335|729|-549|D;B119-1|3482|1074|-451|D;B163-1|3881|849|-968|D;W02-17|4562|1533|-1910|D;M03-4|3514|1185|-824|D;M03-5|3829|1235|-679|D;CA3528-29A|2251|1545|-1553|D;J02-3|4513|707|-404|D;B132-4|3789|739|-725|D;M02-6|4466|1343|-1153|D;M03-3|3690|1191|-2559|D;B120-1|3866|891|-684|D;B80-1|3167|768|-1524|D;B132-1|3528|739|-1638|D;W03-14|4031|1413|-1050|D;B73-2|4202|881|-389|D;B85-2|3764|600|-2243|D;W01-5|3541|1159|-2117|D;B35-1|3289|698|-979|D;TRUSI_w|974|344|-102|D;M02-3|4896|1533|-8891|D;B149-1|3738|821|-912|D;X5-1|2945|600|-6279|D;M01-18|4391|1254|-6592|D;B170-2|4111|868|-4651|D;M01-17|4381|1520|-1430|D;W02-2|4279|1508|-1363|D;B109-2|3752|852|-10675|D;W02-16|4503|1280|-1081|D;W01-10|4241|1229|-1376|D;B73-1|3639|881|-894|D;JN01-1|3538|610|-3006|D;W02-9|4489|1368|-2225|D;W02-6|4099|1242|-1135|D;W01-6|4184|1159|-2204|D;M03-6|3469|1235|-830|D;J01-1|4478|668|-2452|D;B178-2|3873|600|-4874|D;W03-11|3991|1292|-2767|D;M02-9|4136|1546|-71276|D;M02-10|3973|1546|-27480|D;K21_white|2192|600|-3542|D";
+var SKU=R.split(';').map(function(s){var p=s.split('|');return{n:p[0],pr0:+p[1],co0:+p[2],o:+p[3],g:p[4]}});
+var DEF={pm:1,cm:1,spp:32,wb:34,acq:2.5,wth:0.75,drr:10,vc:200,nds:22,tax:25};
+var DEFi={p:0,c:0,spp:32,wb:34,acq:2.5,wth:0.75,drr:10,var:200,nds:22,tax:25};
+var filter='all',sortBy='nw',sortDir=-1,searchQ='';
+function $(i){return document.getElementById(i)}
+function fmt(n){var v=Math.round(n);return(v<0?'−':'')+Math.abs(v).toLocaleString('ru-RU').replace(/,/g,' ')+' ₽'}
+function fmtD(n){var v=Math.round(n);if(v===0)return'0';return(v>0?'+':'−')+Math.abs(v).toLocaleString('ru-RU').replace(/,/g,' ')+' ₽'}
+function calc(s,p){
+  var pr=s.pr0*p.pm,co=s.co0*p.cm;
+  // Поступления селлера: при СПП ≤ комиссии WB → фиксированные 66% от каталога.
+  // При СПП > комиссии WB маркетплейс ДОПЛАЧИВАЕТ селлеру разницу из своей маржи.
+  var sg;
+  if(p.spp<=p.wb){
+    sg=pr*(1-p.wb/100);
+  }else{
+    sg=pr*(1-p.wb/100)+pr*(p.spp-p.wb)/100;
+  }
+  // Все % расходы (эквайринг, вывод, реклама) считаются от поступлений селлера,
+  // а НЕ от цены покупателя — поэтому ЧП инвариантна к СПП при СПП ≤ комиссии WB.
+  var nds=sg*(p.nds/(100+p.nds));
+  var rev=sg-nds;
+  var op=co+p.vc+sg*p.acq/100+sg*p.wth/100+sg*p.drr/100;
+  var pbt=rev-op;
+  var pt=pbt>0?pbt*p.tax/100:0;
+  return{pr:pr,co:co,np:pbt-pt,t:nds+pt};
+}
+function debounce(fn,d){var t;return function(){clearTimeout(t);t=setTimeout(fn,d)}}
+function updateSppBanner(spp,wb){
+  var b=$('spp-banner'),t=$('spp-txt');
+  var diff=(spp-wb).toFixed(1).replace('.',',');
+  var wbStr=wb.toString().replace('.',',');
+  if(spp>wb){
+    b.className='spp-banner bonus';
+    b.querySelector('.ico').textContent='▲';
+    t.innerHTML='<b>СПП '+spp+'% > комиссии WB '+wbStr+'%</b> · WB <b>доплачивает</b> '+diff+'% от цены каталога из своей маржи. Селлер зарабатывает БОЛЬШЕ обычного — каждая такая продажа выгоднее.';
+  }else{
+    b.className='spp-banner safe';
+    b.querySelector('.ico').textContent='✓';
+    t.innerHTML='<b>СПП '+spp+'% ≤ комиссии WB '+wbStr+'%</b> · скидка СПП за счёт маркетплейса. Селлер получает свои фиксированные 66% от каталога — <b>ЧП не меняется</b> от движения этого ползунка.';
+  }
+}
+function compute(){
+  var p={pm:1+(+$('i-p').value)/100,cm:1+(+$('i-c').value)/100,spp:+$('i-spp').value,wb:+$('i-wb').value,acq:+$('i-acq').value,wth:+$('i-wth').value,drr:+$('i-drr').value,vc:+$('i-var').value,nds:+$('i-nds').value,tax:+$('i-tax').value};
+  $('v-p').textContent=(+$('i-p').value>=0?'+':'')+(+$('i-p').value)+'%';
+  $('v-c').textContent=(+$('i-c').value>=0?'+':'')+(+$('i-c').value)+'%';
+  $('v-spp').textContent=p.spp+'%';
+  $('v-wb').textContent=(p.wb+'').replace('.',',')+'%';
+  $('v-acq').textContent=(p.acq+'').replace('.',',')+'%';
+  $('v-wth').textContent=(p.wth+'').replace('.',',')+'%';
+  $('v-drr').textContent=(p.drr+'').replace('.',',')+'%';
+  $('v-var').textContent=p.vc+' ₽';
+  $('v-nds').textContent=p.nds+'%';
+  $('v-tax').textContent=p.tax+'%';
+  updateSppBanner(p.spp,p.wb);
+  var rows=[],sO=0,sN=0,sT=0,pO=0,pN=0,nO=0,nN=0;
+  for(var i=0;i<SKU.length;i++){
+    var s=SKU[i],b=calc(s,DEF),n=calc(s,p);
+    var nn=s.o+(n.np-b.np);
+    sO+=s.o;sN+=nn;sT+=n.t;
+    if(s.o>0)pO++;else nO++;
+    if(nn>0)pN++;else nN++;
+    rows.push({n:s.n,g:s.g,pr:n.pr,co:n.co,o:s.o,nw:nn,d:nn-s.o});
+  }
+  $('a-np').textContent=fmt(sN);
+  $('a-np').style.color=sN>=0?'var(--neon)':'var(--red)';
+  $('a-np').style.textShadow=sN>=0?'var(--neon-glow)':'var(--red-glow)';
+  var dN=sN-sO;
+  $('a-np-d').textContent=Math.round(dN)===0?'без изменений':fmtD(dN);
+  $('a-np-d').style.color=dN>0?'var(--neon)':(dN<0?'var(--red)':'var(--text-mute)');
+  $('a-tax').textContent=fmt(sT);
+  $('a-tax').style.color='var(--red)';
+  $('a-tax').style.textShadow='var(--red-glow)';
+  $('a-pos').textContent=pN+' / '+SKU.length;
+  $('a-pos').style.color='var(--neon)';
+  $('a-pos').style.textShadow='var(--neon-glow)';
+  var dP=pN-pO;
+  $('a-pos-d').textContent=dP===0?'без изм.':(dP>0?'+':'')+dP+' SKU';
+  $('a-pos-d').style.color=dP>0?'var(--neon)':(dP<0?'var(--red)':'var(--text-mute)');
+  $('a-neg').textContent=nN+' / '+SKU.length;
+  $('a-neg').style.color='var(--red)';
+  $('a-neg').style.textShadow='var(--red-glow)';
+  var dM=nN-nO;
+  $('a-neg-d').textContent=dM===0?'без изм.':(dM>0?'+':'')+dM+' SKU';
+  $('a-neg-d').style.color=dM<0?'var(--neon)':(dM>0?'var(--red)':'var(--text-mute)');
+  window._rows=rows;
+  renderTable();
+}
+function renderTable(){
+  var rows=window._rows;if(!rows)return;
+  var f=rows.filter(function(r){
+    if(filter!=='all'){
+      if(filter==='pos'&&r.nw<=0)return false;
+      if(filter==='neg'&&r.nw>0)return false;
+      if((filter==='A'||filter==='B'||filter==='C'||filter==='D')&&r.g!==filter)return false;
+    }
+    if(searchQ&&r.n.toLowerCase().indexOf(searchQ)===-1)return false;
+    return true;
+  });
+  f.sort(function(a,b){
+    var av=a[sortBy],bv=b[sortBy];
+    if(typeof av==='string')return sortDir*av.localeCompare(bv,'ru');
+    return sortDir*(bv-av);
+  });
+  $('fb-cnt').textContent='Показано: '+f.length+' из '+SKU.length;
+  var h='';
+  for(var i=0;i<f.length;i++){
+    var r=f[i];
+    var nc=r.nw>=0?'np-pos':'np-neg';
+    var dc=r.d>0?'np-pos':(r.d<0?'np-neg':'');
+    h+='<tr><td>'+r.n+'</td><td><span class="gt gt-'+r.g+'">'+r.g+'</span></td><td>'+fmt(r.pr)+'</td><td>'+fmt(r.co)+'</td><td>'+fmt(r.o)+'</td><td class="'+nc+'">'+fmt(r.nw)+'</td><td class="'+dc+'">'+fmtD(r.d)+'</td></tr>';
+  }
+  if(!h)h='<tr><td colspan="7" style="text-align:center;color:var(--text-mute);padding:2rem">Ничего не найдено</td></tr>';
+  $('tb').innerHTML=h;
+}
+$('ttl').textContent=SKU.length;
+var deb=debounce(compute,80);
+['p','c','spp','wb','acq','wth','drr','var','nds','tax'].forEach(function(id){
+  var el=$('i-'+id);if(el)el.addEventListener('input',deb);
+});
+document.querySelectorAll('.fb-btn').forEach(function(b){
+  b.addEventListener('click',function(){
+    document.querySelectorAll('.fb-btn').forEach(function(x){x.classList.remove('act')});
+    b.classList.add('act');filter=b.dataset.f;renderTable();
+  });
+});
+document.querySelectorAll('th.sortable').forEach(function(th){
+  th.addEventListener('click',function(){
+    var s=th.dataset.s;
+    if(sortBy===s)sortDir=-sortDir;else{sortBy=s;sortDir=-1}
+    renderTable();
+  });
+});
+$('search').addEventListener('input',debounce(function(){searchQ=$('search').value.toLowerCase();renderTable()},150));
+$('reset').addEventListener('click',function(){
+  Object.keys(DEFi).forEach(function(k){var el=$('i-'+k);if(el)el.value=DEFi[k]});
+  compute();
+});
+compute();
+</script>
+
+</body>
+</html>
