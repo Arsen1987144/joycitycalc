@@ -339,6 +339,13 @@ var DEFi={p:0,c:0,spp:32,wb:34,acq:2.5,wth:0.75,drr:10,var:200,nds:22,tax:25};
 // Этот токен используется для авторизации запросов к API статистики WB. Если требуется
 // хранить ключ в другом месте, перенесите его в настройку конфигурации.
 const WB_TOKEN='eyJhbGciOiJFUzI1NiIsImtpZCI6IjIwMjYwMzAydjEiLCJ0eXAiOiJKV1QifQ.eyJhY2MiOjMsImVudCI6MSwiZXhwIjoxNzk0MDI0NDY5LCJmb3IiOiJzZWxmIiwiaWQiOiIwMTllMDg1OC01ZTZmLTdjMmYtYWM2MC1hNmM1Y2U4MDVlYjAiLCJpaWQiOjEzMDE5MDczMywib2lkIjoxNDE4ODY3LCJzIjoxMDczNzQxOTI2LCJzaWQiOiI4ZDRiMTgwYi0wZjM2LTRkZjMtYmUxMy05N2JkNTcwNTM4MzIiLCJ0IjpmYWxzZSwidWlkIjoxMzAxOTA3Mzn9.Vi3WrqJE1vqklBTynY7B0bFnga9kEsYrWfQWJCsOk6yzKPFlBgDq1Cbfb_o7HpnJqwhVC0HHB-yLWtzzcHKLRA';
+
+// Define an API endpoint for fetching Wildberries metrics. When deploying this site on a platform
+// that supports serverless functions (e.g. Netlify), you can create a function at
+// `/.netlify/functions/wbMetrics` which proxies requests to Wildberries and adds CORS headers.
+// Set API_ENDPOINT to that function path. If left empty, the code will call the Wildberries API
+// directly, which may fail in browsers due to CORS restrictions.
+const API_ENDPOINT='/.netlify/functions/wbMetrics';
 var filter='all',sortBy='nw',sortDir=-1,searchQ='';
 function $(i){return document.getElementById(i)}
 function fmt(n){var v=Math.round(n);return(v<0?'−':'')+Math.abs(v).toLocaleString('ru-RU').replace(/,/g,' ')+' ₽'}
@@ -434,8 +441,14 @@ async function fetchWBMetrics(){
     var now = new Date();
     var past = new Date(now.getTime() - 30*24*60*60*1000);
     var iso = past.toISOString().slice(0,10);
-    // Запрашиваем продажи с указанной даты. Документация WB требует заголовок Authorization
-    var url = 'https://statistics-api.wildberries.ru/api/v1/supplier/sales?dateFrom=' + encodeURIComponent(iso);
+    // Запрашиваем продажи с указанной даты. Если определён API_ENDPOINT, обращаемся к
+    // этому серверу (например, к серверless-функции), иначе используем прямой вызов WB API.
+    var url;
+    if(API_ENDPOINT){
+      url = API_ENDPOINT + '?dateFrom=' + encodeURIComponent(iso);
+    }else{
+      url = 'https://statistics-api.wildberries.ru/api/v1/supplier/sales?dateFrom=' + encodeURIComponent(iso);
+    }
     var resp = await fetch(url, {
       headers: {
         'Authorization': 'Bearer ' + WB_TOKEN,
