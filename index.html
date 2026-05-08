@@ -305,6 +305,10 @@ color:var(–neon);border:1px solid var(–border)
 <th class="sortable" data-s="o">ЧП было ▼</th>
 <th class="sortable" data-s="nw">ЧП стало ▼</th>
 <th class="sortable" data-s="d">Δ ▼</th>
+<th class="sortable" data-s="ctr">CTR ▼</th>
+<th class="sortable" data-s="buyout">Выкуп % ▼</th>
+<th class="sortable" data-s="sold">Продано ▼</th>
+<th class="sortable" data-s="rev">Сумма ▼</th>
 </tr></thead>
 <tbody id="tb"></tbody>
 </table>
@@ -328,6 +332,11 @@ var R="B74-3|3456.1|678|486|A;jeans_wide_blue|3945|624|531|A;X-01_black|3035.4|6
 var SKU=R.split(';').map(function(s){var p=s.split('|');return{n:p[0],pr0:+p[1],co0:+p[2],o:+p[3],g:p[4]}});
 var DEF={pm:1,cm:1,spp:32,wb:34,acq:2.5,wth:0.75,drr:10,vc:200,nds:22,tax:25};
 var DEFi={p:0,c:0,spp:32,wb:34,acq:2.5,wth:0.75,drr:10,var:200,nds:22,tax:25};
+
+// --- Настройка интеграции с Wildberries ---
+// Токен доступа к API Wildberries (только чтение). Замените значение ниже на реальный токен,
+// если планируется автоматическое обновление данных через API. При пустом токене запросы не выполняются.
+const WB_TOKEN='';
 var filter='all',sortBy='nw',sortDir=-1,searchQ='';
 function $(i){return document.getElementById(i)}
 function fmt(n){var v=Math.round(n);return(v<0?'−':'')+Math.abs(v).toLocaleString('ru-RU').replace(/,/g,' ')+' ₽'}
@@ -386,7 +395,7 @@ function compute(){
     sO+=s.o;sN+=nn;sT+=n.t;
     if(s.o>0)pO++;else nO++;
     if(nn>0)pN++;else nN++;
-    rows.push({n:s.n,g:s.g,pr:n.pr,co:n.co,o:s.o,nw:nn,d:nn-s.o});
+    rows.push({n:s.n,g:s.g,pr:n.pr,co:n.co,o:s.o,nw:nn,d:nn-s.o,ctr:0,buyout:0,sold:0,rev:0});
   }
   $('a-np').textContent=fmt(sN);
   $('a-np').style.color=sN>=0?'var(--neon)':'var(--red)';
@@ -412,6 +421,35 @@ function compute(){
   window._rows=rows;
   renderTable();
 }
+
+// Функция-заглушка для получения метрик Wildberries. При наличии действующего токена и описания
+// конечной точки API замените URL и обработку ответа в соответствии с документацией WB.
+async function fetchWBMetrics(){
+  try{
+    if(!WB_TOKEN)return; // если токен не указан, не выполняем запросы
+    // Пример: получаем данные продаж и рекламных показателей
+    // const resp = await fetch('https://statistics.wildberries.ru/api/v1/sales', {
+    //   headers: { 'Authorization': 'Bearer ' + WB_TOKEN }
+    // });
+    // const data = await resp.json();
+    // data.forEach(function(item){
+    //   var row = window._rows.find(function(r){ return r.n === item.sku; });
+    //   if(row){
+    //     row.ctr = item.ctr;
+    //     row.buyout = item.buyout;
+    //     row.sold = item.soldQty;
+    //     row.rev = item.revenue;
+    //   }
+    // });
+    // После обновления значений перерисовываем таблицу
+    renderTable();
+  }catch(e){
+    console.error('Ошибка загрузки данных Wildberries:', e);
+  }
+}
+
+// Запускаем обновление метрик каждые 10 минут (600000 мс)
+setInterval(fetchWBMetrics, 600000);
 function renderTable(){
   var rows=window._rows;if(!rows)return;
   var f=rows.filter(function(r){
@@ -434,9 +472,20 @@ function renderTable(){
     var r=f[i];
     var nc=r.nw>=0?'np-pos':'np-neg';
     var dc=r.d>0?'np-pos':(r.d<0?'np-neg':'');
-    h+='<tr><td>'+r.n+'</td><td><span class="gt gt-'+r.g+'">'+r.g+'</span></td><td>'+fmt(r.pr)+'</td><td>'+fmt(r.co)+'</td><td>'+fmt(r.o)+'</td><td class="'+nc+'">'+fmt(r.nw)+'</td><td class="'+dc+'">'+fmtD(r.d)+'</td></tr>';
+    h+='<tr><td>'+r.n+'</td>'+
+        '<td><span class="gt gt-'+r.g+'">'+r.g+'</span></td>'+
+        '<td>'+fmt(r.pr)+'</td>'+
+        '<td>'+fmt(r.co)+'</td>'+
+        '<td>'+fmt(r.o)+'</td>'+
+        '<td class="'+nc+'">'+fmt(r.nw)+'</td>'+
+        '<td class="'+dc+'">'+fmtD(r.d)+'</td>'+
+        '<td>'+((r.ctr||0).toFixed(2))+'%</td>'+
+        '<td>'+((r.buyout||0).toFixed(2))+'%</td>'+
+        '<td>'+((r.sold||0))+'</td>'+
+        '<td>'+fmt(r.rev||0)+'</td>'+
+        '</tr>';
   }
-  if(!h)h='<tr><td colspan="7" style="text-align:center;color:var(--text-mute);padding:2rem">Ничего не найдено</td></tr>';
+  if(!h)h='<tr><td colspan="11" style="text-align:center;color:var(--text-mute);padding:2rem">Ничего не найдено</td></tr>';
   $('tb').innerHTML=h;
 }
 $('ttl').textContent=SKU.length;
