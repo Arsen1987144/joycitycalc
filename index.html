@@ -338,7 +338,7 @@ var DEFi={p:0,c:0,spp:32,wb:34,acq:2.5,wth:0.75,drr:10,var:200,nds:22,tax:25};
 // Значение ниже заполнено реальным токеном, предоставленным владельцем кабинета.
 // Этот токен используется для авторизации запросов к API статистики WB. Если требуется
 // хранить ключ в другом месте, перенесите его в настройку конфигурации.
-const WB_TOKEN='eyJhbGciOiJFUzl1NilsImtpZCI6ljlwMjYwMzAydjEiLCJOeXAiOiJKV1QfQ.eyJhY2MiOjEsImVudCI6MSwiZXhwljoxNzkOMDA4NTE0LCJpZCI6ljAxOWUwNzYOLWU5ZTktNzg1Mi1iNjkxLTAwYTU2NDVkNmYyMyIsImlpZCI6MTMwMTkwNzMzLCJvaWQiOjEOMTg4NjcsInMiOjEwNzM3NTc5NTAslnNpZCI6ljhkNGIxODBiLTBmMzYtNGRmMy1iZTEzLTk3YmQ1NzA1MzgzMilsInQiOmZhbHNILCJ1aWQiOjEzMDE5MDczM30.UrlbMsZjG_khSc3gDOJgAOuvDE9NgREvS-BeMNu1Pu1MAhY3bglz7rnY7mrWgH50ZAJBKzohDIYk7dZBM7yMIA';
+const WB_TOKEN='eyJhbGciOiJFUzI1NiIsImtpZCI6IjIwMjYwMzAydjEiLCJ0eXAiOiJKV1QifQ.eyJhY2MiOjEsImVudCI6MSwiZXhwIjoxNzk0MDIwNjUyLCJpZCI6IjAxOWUwODFlLTIwZWEtN2VmYS04NTMxLTc3MjI0NTcyNjVlZCIsImlpZCI6MTMwMTkwNzMzLCJvaWQiOjE0MTg4NjcsInMiOjEwNzM3NTc5NTAsInNpZCI6IjhkNGIxODBiLTBmMzYtNGRmMy1iZTEzLTk3YmQ1NzA1MzgzMiIsInQiOmZhbHNlLCJ1aWQiOjEzMDE5MDczM30.2nzpyNg4fCnDHQXBf-nXUij-f8Y51vh-52Q3JyLca_QMNpxUdO1_UtPCWf3Al2_VZnz0W6eB77ZPrbppc_KAEw';
 var filter='all',sortBy='nw',sortDir=-1,searchQ='';
 function $(i){return document.getElementById(i)}
 function fmt(n){var v=Math.round(n);return(v<0?'−':'')+Math.abs(v).toLocaleString('ru-RU').replace(/,/g,' ')+' ₽'}
