@@ -334,9 +334,11 @@ var DEF={pm:1,cm:1,spp:32,wb:34,acq:2.5,wth:0.75,drr:10,vc:200,nds:22,tax:25};
 var DEFi={p:0,c:0,spp:32,wb:34,acq:2.5,wth:0.75,drr:10,var:200,nds:22,tax:25};
 
 // --- Настройка интеграции с Wildberries ---
-// Токен доступа к API Wildberries (только чтение). Замените значение ниже на реальный токен,
-// если планируется автоматическое обновление данных через API. При пустом токене запросы не выполняются.
-const WB_TOKEN='';
+// Токен доступа к API Wildberries (только чтение).
+// Значение ниже заполнено реальным токеном, предоставленным владельцем кабинета.
+// Этот токен используется для авторизации запросов к API статистики WB. Если требуется
+// хранить ключ в другом месте, перенесите его в настройку конфигурации.
+const WB_TOKEN='eyJhbGciOiJFUzI1NiIsImtpZCI6IjIwMjYwMzAydjEiLCJ0eXAiOiJKV1QifQ.eyJhY2MiOjEsImVudCI6MSwiZXhwIjoxNzkzOTkxMjAxLCJpZCI6IjAxOWUwNjVjLWJjMWYtNzI0Mi1iYTU3LWQzNDE5NTRjNDlhNyIsImlpZCI6MTMwMTkwNzMzLCJvaWQiOjE0MTg4NjcsInMiOjgzMTgsInNpZCI6IjhkNGIxODBiLTBmMzYtNGRmMy1iZTEzLTk3YmQ1NzA1MzgzMiIsInQiOmZhbHNlLCJ1aWQiOjEzMDE5MDczM30.uBp3Miv10y5esGamfWF1bs_IbyMQzj2xpjy37mEhGHSkniPkomHIy_1bke9w3dJqFJ9am4iZA8BoUIGWl4JIfA';
 var filter='all',sortBy='nw',sortDir=-1,searchQ='';
 function $(i){return document.getElementById(i)}
 function fmt(n){var v=Math.round(n);return(v<0?'−':'')+Math.abs(v).toLocaleString('ru-RU').replace(/,/g,' ')+' ₽'}
@@ -425,31 +427,61 @@ function compute(){
 // Функция-заглушка для получения метрик Wildberries. При наличии действующего токена и описания
 // конечной точки API замените URL и обработку ответа в соответствии с документацией WB.
 async function fetchWBMetrics(){
+  // Функция получает данные о продажах по API статистики WB и обновляет метрики в таблице.
   try{
-    if(!WB_TOKEN)return; // если токен не указан, не выполняем запросы
-    // Пример: получаем данные продаж и рекламных показателей
-    // const resp = await fetch('https://statistics.wildberries.ru/api/v1/sales', {
-    //   headers: { 'Authorization': 'Bearer ' + WB_TOKEN }
-    // });
-    // const data = await resp.json();
-    // data.forEach(function(item){
-    //   var row = window._rows.find(function(r){ return r.n === item.sku; });
-    //   if(row){
-    //     row.ctr = item.ctr;
-    //     row.buyout = item.buyout;
-    //     row.sold = item.soldQty;
-    //     row.rev = item.revenue;
-    //   }
-    // });
-    // После обновления значений перерисовываем таблицу
+    if(!WB_TOKEN) return; // токен не указан — запросы не выполняем
+    // Вычисляем дату 30 дней назад в формате YYYY-MM-DD
+    var now = new Date();
+    var past = new Date(now.getTime() - 30*24*60*60*1000);
+    var iso = past.toISOString().slice(0,10);
+    // Запрашиваем продажи с указанной даты. Документация WB требует заголовок Authorization
+    var url = 'https://statistics-api.wildberries.ru/api/v1/supplier/sales?dateFrom=' + encodeURIComponent(iso);
+    var resp = await fetch(url, {
+      headers: {
+        'Authorization': 'Bearer ' + WB_TOKEN,
+        'Content-Type': 'application/json'
+      }
+    });
+    if(!resp.ok){
+      console.error('WB API error status', resp.status);
+      return;
+    }
+    var data = await resp.json();
+    // Если ответ содержит объект {data: [...]}, извлекаем массив
+    var list = Array.isArray(data) ? data : (Array.isArray(data.data) ? data.data : []);
+    var metricsMap = {};
+    // Проходим по каждой записи. Каждая запись описывает одну продажу или возврат.
+    list.forEach(function(item){
+      // supplierArticle — артикул продавца; nmId — артикул WB
+      var art = item.supplierArticle || item.nmId || item.nmid || item.article;
+      if(!art) return;
+      if(!metricsMap[art]) metricsMap[art] = {qty:0, rev:0};
+      var qty = item.quantity || item.saleSize || item.saleQnt || 1;
+      // Сумма, которую платит покупатель. WB может возвращать сумму в разных полях.
+      var price = item.totalPrice || item.forPay || item.retailPrice || item.salePrice || item.saleSum || 0;
+      metricsMap[art].qty += qty;
+      metricsMap[art].rev += price * qty;
+    });
+    // Обновляем строки в таблице
+    window._rows.forEach(function(r){
+      var m = metricsMap[r.n];
+      if(m){
+        r.sold = m.qty;
+        r.rev = m.rev;
+        // CTR и buyout по умолчанию ноль; если появятся другие API, можно обновить здесь
+      }
+    });
+    // Перерисовываем таблицу, чтобы отобразить новые данные
     renderTable();
   }catch(e){
     console.error('Ошибка загрузки данных Wildberries:', e);
   }
 }
 
-// Запускаем обновление метрик каждые 10 минут (600000 мс)
-setInterval(fetchWBMetrics, 600000);
+// Запускаем обновление метрик каждые 30 минут (1800000 мс)
+setInterval(fetchWBMetrics, 1800000);
+// Первичный вызов при загрузке страницы
+fetchWBMetrics();
 function renderTable(){
   var rows=window._rows;if(!rows)return;
   var f=rows.filter(function(r){
